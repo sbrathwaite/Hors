@@ -17,7 +17,7 @@ Foreach ($Key in $Keys) {
     # Check if keys exists first
     # Get-MpComputerStatus | Select -Property AntispywareEnabled, AntivirusEnabled
     $KeyValue = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender" -Name $Key
-    if (!(Test-Path $KeyValue)) {
+    if (!Test-Path $KeyValue) {
         Write-Host "Reg key for AntiSpyware, AntiVirus does not exists, using alternative check...";
         break;
     }
@@ -46,18 +46,23 @@ Foreach ($Key in $Keys) {
 # 4 - UserDefined
 # 5 - NoAction
 # 6 - Block
-Write-Host "Attempting to configure Defender"
-try {
-    Set-MpPreference -EnableNetworkProtection Enabled | Out-Null
-    Set-MpPreference -HighThreatDefaultAction 2 | Out-Null
-    Set-MpPreference -SevereThreatDefaultAction 2 | Out-Null
-    Set-MpPreference -DisableRealtimeMonitoring $false | Out-Null
-    Set-MpPreference -SubmitSamplesConsent 3 | Out-Null
-    Write-Host "Done"
+if((Get-Module -ListAvailable -Name defender) -ne $null) {
+    Write-Host "Attempting to configure Defender"
+    try {
+        Set-MpPreference -EnableNetworkProtection Enabled | Out-Null
+        Set-MpPreference -HighThreatDefaultAction 2 | Out-Null
+        Set-MpPreference -SevereThreatDefaultAction 2 | Out-Null
+        Set-MpPreference -DisableRealtimeMonitoring $false | Out-Null
+        Set-MpPreference -SubmitSamplesConsent 3 | Out-Null
+        Write-Host "Done"
+    }
+    catch {
+        Write-Host "Failed to set preferences"
+    }
+} else {
+    Write-Host "Defender module does not exists" -ForegroundColor Red
 }
-catch {
-    Write-Host "Failed to set preferences"
-}
+
 
 # Enable Windows Firewall on all network profiles
 try {
@@ -86,18 +91,14 @@ else {
     }
 }
 # Set spotify Firewall exceptions
-# UWP
-# Check if UWP first
-If((Get-NetFirewallRule -Group "Spotify Music") -ne $null) {
-    try {
-        Set-NetFirewallRule -Group "Spotify Music" -Enabled $true -Profile Domain, Public, Private -Direction Outbound -Action Allow    
-    }
-    catch {
-        Write-Host "Failed to let spotify through Firewall"
-    }
-}
 
 # Exe
+try {
+    New-NetFirewallRule -DisplayName "Allow Spotify" -Direction Outbound -Program "%APPDATA%\Spotify\Spotify.exe" -Action Allow -Profile Domain,Public,Private    
+}
+catch {
+    Write-Warning "Could not create Windows Firewall rule for spotify, do it manually."
+}
 
 try {
     Remove-Item -Path "C:\PandaAvinstallation" -Recurse -Force
