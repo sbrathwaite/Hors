@@ -17,7 +17,7 @@ Foreach ($Key in $Keys) {
     # Check if keys exists first
     # Get-MpComputerStatus | Select -Property AntispywareEnabled, AntivirusEnabled
     $KeyValue = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender" -Name $Key
-    if (!Test-Path $KeyValue) {
+    if (!(Test-Path $KeyValue)) {
         Write-Host "Reg key for AntiSpyware, AntiVirus does not exists, using alternative check...";
         break;
     }
