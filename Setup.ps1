@@ -17,7 +17,7 @@ if(!(Test-Path $UninstallFolder)) {
     }
     
     # Download Upgrade assistant for Windows
-    Invoke-WebRequest -UseBasicParsing -Uri "https://download.microsoft.com/download/8/3/c/83c39dca-2d27-4c24-b98b-0a4d6d921c80/Windows10Upgrade9252.exe" -OutFile "C:\temp\Windows10Upgrade9252.exe";
+    Invoke-WebRequest -UseBasicParsing -Uri "https://download.microsoft.com/download/8/3/c/83c39dca-2d27-4c24-b98b-0a4d6d921c80/Windows10Upgrade9252.exe" -OutFile "$UninstallFolder\Windows10Upgrade9252.exe";
     
     # Download Script
     if (![System.IO.File]::Exists("C:\PandaAvinstallation\uninstaller.exe")) {
